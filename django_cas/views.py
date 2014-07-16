@@ -6,7 +6,7 @@ from django.core.exceptions import PermissionDenied
 from django.http import HttpResponseRedirect, HttpResponse, Http404
 from django_cas.models import PgtIOU, SessionServiceTicket
 from urllib import urlencode
-from urlparse import urljoin
+from urlparse import urljoin, urlparse
 from xml.dom import minidom
 import logging
 import types
@@ -76,8 +76,12 @@ def _logout_url(request, next_page):
     """ Returns a CAS logout URL """
 
     logout_url = urljoin(settings.CAS_SERVER_URL, 'logout')
+    parsed_next_page = urlparse(logout_url)
     if next_page:
-        logout_url += '?' + urlencode({'url': _service(request) + next_page})
+        if parsed_next_page.netloc == '':
+            logout_url += '?' + urlencode({'url': _service(request) + next_page})
+        else:
+            logout_url += '?' + urlencode({'url': + next_page})
 
     return logout_url
 
